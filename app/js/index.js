@@ -13,12 +13,12 @@ $(function() {
     function login(code) {
         $.ajax({
             type: 'POST',
-            url: 'http://127.0.0.1:8080/login',
+            url: 'http://127.0.0.1:8080/getThreads',
             data: JSON.stringify(code),
             dataType: 'json',
             contentType: "application/json; charset=utf-8",
             success: function(data) {
-
+                console.log(data)
                 if (!data.success) {
                     $('.errorLogin').show(1000);
                     window.open(data.redirectUrl, "Authorize access to your gmail account", "width=500,height=500");
