@@ -1,0 +1,22 @@
+{
+    "name": "gmail_search_node_webapp",
+    "version": "1.0.0",
+    "description": "A node application that allows you to efficiently search through your gmail inbox",
+    "dependencies": {
+        "body-parser": "^1.17.2",
+        "cheerio": "^1.0.0-rc.1",
+        "express": "^4.15.3",
+        "google-auth-library": "^0.10.0",
+        "nodemon": "^1.11.0",
+        "path": "^0.12.7",
+        "request": "^2.81.0",
+        "request-promise": "^4.2.1"
+    },
+    "devDependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Amartya-Duke/Gmail-Search-Node-WebApp"
+    },
+    "author": "Amartya Sarkar",
+    "license": "ISC"
+}
