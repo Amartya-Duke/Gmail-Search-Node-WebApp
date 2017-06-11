@@ -94,7 +94,7 @@ var requester = (function() {
         function getNextPageOfThreads(nextPageToken, result) {
             gmail.users.threads.list({
                 auth: auth,
-                userId: 'me',
+                userId: userId,
                 q: query,
                 pageToken: nextPageToken
             }, function(err, response) {
@@ -113,9 +113,29 @@ var requester = (function() {
 
     }
 
+    function getThread(userId, threadId, auth, callback) {
+        var gmail = google.gmail('v1');
+        gmail.users.threads.get({
+            auth: auth,
+            userId: userId,
+            id: threadId
+        }, function(err, response) {
+            var json = {};
+            if (err)
+                json.success = false;
+            else {
+                json.success = true;
+                json.data = response;
+                callback(json);
+            }
+
+        })
+    }
+
     return {
         retrieveMailThreads,
-        retrieveMailThreadsUsingGoogleAPIs
+        retrieveMailThreadsUsingGoogleAPIs,
+        getThread
     }
 })()
 module.exports = requester;

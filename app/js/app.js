@@ -47,7 +47,7 @@ app.post('/getThreads/:days', function(request, response) {
     if (!data) {
         authenticator.authenticate(function(res, oauth2Client) {
             console.log(res)
-            if (res.success)
+            if (res.success) {
                 requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
                     model.storeThreads(data.threads, function(err, data) {
                         if (err)
@@ -59,16 +59,34 @@ app.post('/getThreads/:days', function(request, response) {
                         }
                     });
 
-                });
+                })
+            } else {
+                response.json(res)
+            }
         })
     } else {
         authenticator.refreshToken(data, function(res, oauth2Client) {
-            response.json(response);
+            response.json(res);
         })
     }
 });
 
+app.get('/getThreadsFromId/:threadId', function(request, response) {
+    var threadId = request.params.threadId;
+    authenticator.authenticate(function(res, oauth2Client) {
+        if (res.success) {
+            requester.getThread('me', threadId, oauth2Client, function(res) {
+                response.json(res)
+            })
 
+        } else {
+            authenticator.refreshToken(data, function(res, oauth2Client) {
+                response.json(res);
+            })
+        }
+    })
+
+})
 
 
 /* starting server at port 8080*/

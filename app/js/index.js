@@ -30,20 +30,45 @@ $(function() {
     }
 
     function populateUI(data) {
-        var table = $('#gmail-threads');
-        table.html('');
-        table.append('<tr>' +
-            '<th>threadId</th>' +
-            '<th>Snippet</th>' +
-            '<th>historyId</th>' +
-            '</tr>')
+        var threadsDiv = $('#wrapper');
+
+
         for (var i = 0; i < data.length; i++) {
-            var row = '<tr>' +
-                '<td>' + data[i].id + '</td>' +
-                '<td>' + data[i].snippet + '</td>' +
-                '<td>' + data[i].historyId + '</td>' +
-                '</tr>';
-            table.append(row);
+            var row = '<div class="threads" id=' + data[i].id + '>' +
+                '<div>' + data[i].snippet + '</div>' +
+                '</div>';
+            threadsDiv.append(row);
         }
+        bindListner();
     }
+
+    function bindListner() {
+        $('.threads').on('click', getMessages);
+    }
+
+    function getMessages() {
+        var clickedRow = event.currentTarget;
+        console.log(clickedRow)
+        var id = clickedRow.getAttribute('id');
+
+        $.ajax({
+            type: 'GET',
+            url: 'http://127.0.0.1:8080/getThreadsFromId/' + id,
+            success: function(data) { //console.log(clickedRow.childNodes[2].childNodes[0])
+                console.log(data.data.messages)
+                var messageRow = "";
+                var messageDiv = document.createElement('div');
+                messageDiv.className = "messages";
+                for (var i = 0; i < data.data.messages.length; i++) {
+                    var messageRow = document.createElement('div');
+                    messageRow.className = 'singlemessages';
+                    messageRow.innerHTML = data.data.messages[i].snippet;
+                    messageDiv.appendChild(messageRow);
+                }
+                document.getElementById(id).appendChild(messageDiv)
+            }
+        });
+    }
+
+
 })
