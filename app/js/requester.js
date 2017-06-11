@@ -35,7 +35,9 @@ var requester = (function() {
         while (currentTime + miliseconds >= new Date().getTime()) {}
     }
 
-    function storeMessage(token) {
+    function storeMessage(token, callback) {
+        var json = {};
+        json.threads = token;
         var pat = path.join(__dirname, '../../') + 'messages/messages.json';
         fs.truncate(pat, 0, function() {
             for (var i = 0; i < token.length; i++) {
@@ -46,7 +48,7 @@ var requester = (function() {
                 });
             }
             console.log('Saved!');
-
+            callback(json)
         })
 
     }
@@ -66,7 +68,7 @@ var requester = (function() {
             });
     }
 
-    function retrieveMailThreadsUsingGoogleAPIs(userId, noOfDays, auth) {
+    function retrieveMailThreadsUsingGoogleAPIs(userId, noOfDays, auth, callback) {
         var gmail = google.gmail('v1');
         var query = 'after:' + getDate(noOfDays).from.toString();
         console.log(query)
@@ -84,8 +86,9 @@ var requester = (function() {
             result = result.concat(response.threads);
             if (response.nextPageToken)
                 getNextPageOfThreads(response.nextPageToken, result);
-            else
-                storeMessage(result)
+            else {
+                storeMessage(result, callback)
+            }
         });
 
         function getNextPageOfThreads(nextPageToken, result) {
@@ -102,8 +105,9 @@ var requester = (function() {
                 result = result.concat(response.threads);
                 if (response.nextPageToken)
                     getNextPageOfThreads(response.nextPageToken, result);
-                else
-                    storeMessage(result)
+                else {
+                    storeMessage(result, callback)
+                }
             });
         }
 

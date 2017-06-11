@@ -5,3 +5,7 @@
 .codeinput {
     width: 50%;
 }
+
+.gmail-threads tr {
+    cursor: pointer;
+}

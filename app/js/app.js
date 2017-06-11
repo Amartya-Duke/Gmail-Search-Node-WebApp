@@ -6,11 +6,16 @@ var path = require('path');
 var bodyParser = require("body-parser");
 var authenticator = require('./authenticator.js');
 var requester = require('./requester.js');
+var model = require('./model.js');
 var rp = require('request-promise');
+var mongoose = require('mongoose');
 var app = express();
 
 app.use(bodyParser.json());
 app.use("/", express.static(path.join(__dirname, '../')));
+
+mongoose.connect('127.0.0.1:27017/gmailStore');
+var db = mongoose.connection;
 
 /* Allowing cross domain access */
 var allowCrossDomain = function(req, res, next) {
@@ -35,15 +40,26 @@ app.post('/login', function(req, res) {
     }
 });
 
-app.post('/getThreads', function(request, response) {
+app.post('/getThreads/:days', function(request, response) {
     var data = request.body.code;
+    var noOfDays = request.params.days;
+    console.log(noOfDays)
     if (!data) {
         authenticator.authenticate(function(res, oauth2Client) {
             console.log(res)
             if (res.success)
-                requester.retrieveMailThreadsUsingGoogleAPIs('me', 10, oauth2Client);
+                requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
+                    model.storeThreads(data.threads, function(err, data) {
+                        if (err)
+                            console.log(err);
+                        else {
+                            console.log('Stored in database')
+                            res.data = data;
+                            response.json(res);
+                        }
+                    });
 
-            response.json(res)
+                });
         })
     } else {
         authenticator.refreshToken(data, function(res, oauth2Client) {
