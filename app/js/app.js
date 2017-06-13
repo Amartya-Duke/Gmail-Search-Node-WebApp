@@ -49,7 +49,8 @@ app.post('/getThreads/:days', function(request, response) {
             console.log(res)
             if (res.success) {
                 requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
-                    model.storeThreads(data.threads, function(err, data) {
+
+                    model.storeThreads(data, function(err, data) {
                         if (err)
                             console.log(err);
                         else {
@@ -58,7 +59,6 @@ app.post('/getThreads/:days', function(request, response) {
                             response.json(res);
                         }
                     });
-
                 })
             } else {
                 response.json(res)
@@ -71,13 +71,32 @@ app.post('/getThreads/:days', function(request, response) {
     }
 });
 
-app.get('/getThreadsFromId/:threadId', function(request, response) {
+app.post('/fetchData', function(request, response) {
+    model.fetchData(function(err, data) {
+        response.json(data)
+    })
+})
+
+app.get('/getMessagesFromThreadId/:threadId', function(request, response) {
     var threadId = request.params.threadId;
     authenticator.authenticate(function(res, oauth2Client) {
         if (res.success) {
-            requester.getThread('me', threadId, oauth2Client, function(res) {
-                response.json(res)
-            })
+            requester.getMessagesFromThreadId('me', threadId, oauth2Client)
+                .then(function(data) {
+                    console.log(data)
+                    model.storeThreads(data, function(err, data) {
+                        if (err)
+                            console.log(err);
+                        else {
+                            console.log('Stored in database')
+                            res.data = data;
+                            response.json(data);
+                        }
+                    });
+                })
+                .catch(function(err) {
+                    console.log(err)
+                })
 
         } else {
             authenticator.refreshToken(data, function(res, oauth2Client) {

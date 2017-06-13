@@ -5,6 +5,11 @@ var model = (function() {
     var threadSchema = new Schema({
         id: String,
         snippet: String,
+        historyId: String,
+        messages: [{
+            id: String,
+            snippet: String
+        }],
         historyId: String
     });
 
@@ -13,7 +18,7 @@ var model = (function() {
             return mongoose.model('threads', threadSchema);
     }
     var storeThreads = function(arrayOfThreads, callback) {
-
+        // console.log(arrayOfThreads)
         var threads = selectTable('threads');
         threads.remove({}, function(err, data) {
             if (err) {
@@ -24,8 +29,13 @@ var model = (function() {
 
     }
 
+    var fetchData = function(callback) {
+        selectTable('threads').find(callback);
+    }
+
     return {
-        storeThreads
+        storeThreads,
+        fetchData
     }
     //  mongod --dbpath "C:\Users\amart_000\Desktop\NodeWebApp\Gmail-Search-Node-WebApp\db"
 })()

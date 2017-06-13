@@ -13,18 +13,15 @@ $(function() {
     function login(noOfDays, code) {
         $.ajax({
             type: 'POST',
-            url: 'http://127.0.0.1:8080/getThreads/' + noOfDays,
+            url: 'http://127.0.0.1:8080/fetchData/',
             data: JSON.stringify(code),
             dataType: 'json',
             contentType: "application/json; charset=utf-8",
             success: function(data) {
                 console.log(data)
-                if (!data.success) {
-                    $('.errorLogin').show(1000);
-                    window.open(data.redirectUrl, "Authorize access to your gmail account", "width=500,height=500");
-                } else {
-                    populateUI(data.data);
-                }
+
+                populateUI(data);
+
             }
         });
     }
@@ -34,10 +31,25 @@ $(function() {
 
 
         for (var i = 0; i < data.length; i++) {
-            var row = '<div class="threads" id=' + data[i].id + '>' +
-                '<div>' + data[i].snippet + '</div>' +
-                '</div>';
-            threadsDiv.append(row);
+            var mainDiv = document.createElement('div');
+            mainDiv.className = "threads";
+            mainDiv.id = data[i].id;
+
+            var divThread = document.createElement('div');
+            divThread.innerHTML = data[i].snippet;
+
+            var messageDiv = document.createElement('div');
+            messageDiv.className = "messages";
+            for (var j = 0; j < data[i].messages.length; j++) {
+                var messageRow = document.createElement('div');
+                messageRow.className = 'singlemessages';
+                messageRow.innerHTML = data[i].messages[j].snippet;
+                messageDiv.appendChild(messageRow);
+            }
+            mainDiv.appendChild(divThread);
+            mainDiv.appendChild(messageDiv);
+            document.getElementById('wrapper').appendChild(mainDiv);
+
         }
         bindListner();
     }
@@ -46,14 +58,14 @@ $(function() {
         $('.threads').on('click', getMessages);
     }
 
-    function getMessages() {
+    function getMessages(event) {
         var clickedRow = event.currentTarget;
         console.log(clickedRow)
         var id = clickedRow.getAttribute('id');
 
         $.ajax({
             type: 'GET',
-            url: 'http://127.0.0.1:8080/getThreadsFromId/' + id,
+            url: 'http://127.0.0.1:8080/getMessagesFromThreadId/' + id,
             success: function(data) { //console.log(clickedRow.childNodes[2].childNodes[0])
                 console.log(data.data.messages)
                 var messageRow = "";
