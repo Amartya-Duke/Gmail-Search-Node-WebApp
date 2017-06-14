@@ -1,0 +1,38 @@
+#msg {
+    color: green;
+    font-weight: 10px;
+    text-align: center;
+}
+
+.search-submit-btn {
+    margin: auto
+}
+
+.search-input,
+.search-submit-btn,
+.logout,
+.refresh {
+    width: 100%;
+    margin: 5px;
+}
+
+.threads {
+    cursor: pointer;
+    margin: 10px;
+    background: darkgray;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.messages {
+    padding: 2px 0px;
+    background: lightcyan;
+    border-radius: 5px;
+}
+
+.singlemessages {
+    margin: 5px 5px;
+    background: lightgray;
+    padding: 10px;
+    border-radius: 5px;
+}

@@ -1,28 +1,13 @@
-.center {
-    text-align: center;
+form {
+    text-align: center
 }
 
-.codeinput {
-    width: 50%;
+input {
+    display: block;
+    width: 40%;
+    margin: 15px auto
 }
 
-.threads {
-    cursor: pointer;
-    margin: 10px;
-    background: darkgray;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.messages {
-    padding: 2px 0px;
-    background: lightcyan;
-    border-radius: 5px;
-}
-
-.singlemessages {
-    margin: 5px 5px;
-    background: lightgray;
-    padding: 10px;
-    border-radius: 5px;
+#error {
+    color: red;
 }

@@ -89,7 +89,6 @@ var authenticator = (function() {
             var jsonResponse = {};
             authorize(credentials)
                 .then(function(auth) {
-                    console.log('n')
                     jsonResponse.success = true;
                     callback(jsonResponse, auth);
                 })

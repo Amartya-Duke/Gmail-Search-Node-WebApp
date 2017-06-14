@@ -74,7 +74,7 @@ var requester = (function() {
                 // Process html like you would with jQuery...
                 var result = [];
                 result = result.concat(parsedBody.threads);
-                storeMessage(result, callback);
+                storeMessage(userId, result, auth, callback);
                 console.log('stored in file')
             })
             .catch(function(err) {

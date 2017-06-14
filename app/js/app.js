@@ -28,52 +28,84 @@ var allowCrossDomain = function(req, res, next) {
 app.use(allowCrossDomain);
 
 app.post('/login', function(req, res) {
-    var data = req.body.code;
-    if (!data) {
-        authenticator.authenticate(function(response, oauth2Client) {
-            res.json(response);
+    var token = req.body.token;
+    console.log(token + ' token')
+    if (!token) {
+        authenticator.authenticate(function(data, oauth2Client) {
+            res.send(data);
         })
     } else {
-        authenticator.refreshToken(data, function(response, oauth2Client) {
-            res.json(response);
+        authenticator.refreshToken(token, function(data, oauth2Client) {
+            res.json(data);
         })
     }
 });
+
+app.post('/logout', function(request, response) {
+    var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
+        process.env.USERPROFILE) + '/.credentials/';
+
+    var TOKEN_PATH = TOKEN_DIR + 'gmail-nodejs-quickstart.json';
+
+    var res = {};
+    console.log('j')
+    model.deleteData(function(err, data) {
+        console.log('k')
+
+        if (err) {
+            res.success = false;
+            res.err = err;
+            response.json(res);
+        } else {
+            fs.unlink(TOKEN_PATH, function(err) {
+                if (err) {
+                    res.success = false;
+                    res.err += err;
+                } else {
+                    res.success = true;
+                    console.log('file deleted successfully');
+                }
+                response.json(res);
+            })
+        }
+    })
+})
 
 app.post('/getThreads/:days', function(request, response) {
-    var data = request.body.code;
     var noOfDays = request.params.days;
     console.log(noOfDays)
-    if (!data) {
-        authenticator.authenticate(function(res, oauth2Client) {
-            console.log(res)
-            if (res.success) {
-                requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
 
-                    model.storeThreads(data, function(err, data) {
-                        if (err)
-                            console.log(err);
-                        else {
-                            console.log('Stored in database')
-                            res.data = data;
-                            response.json(res);
-                        }
-                    });
-                })
-            } else {
-                response.json(res)
-            }
-        })
-    } else {
-        authenticator.refreshToken(data, function(res, oauth2Client) {
-            response.json(res);
-        })
-    }
+    authenticator.authenticate(function(res, oauth2Client) {
+        console.log(res)
+        if (res.success) {
+            requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
+
+                model.storeThreads(data, function(err, data) {
+                    if (err)
+                        console.log(err);
+                    else {
+                        console.log('Stored in database')
+                        res.data = data;
+                        response.json(res);
+                    }
+                });
+            })
+        } else {
+            response.json(res)
+        }
+    })
+
 });
 
-app.post('/fetchData', function(request, response) {
-    model.fetchData(function(err, data) {
-        response.json(data)
+app.post('/fetchData/:query', function(request, response) {
+    var query = request.params.query;
+    console.log('abc')
+    model.fetchData(query, function(err, data) {
+        if (err) {
+            console.log('here')
+            response.json(err)
+        } else
+            response.json(data)
     })
 })
 
@@ -110,5 +142,5 @@ app.get('/getMessagesFromThreadId/:threadId', function(request, response) {
 
 /* starting server at port 8080*/
 var server = app.listen(8080, function() {
-    console.log("server started and listening :=" + server.address().port);
+    console.log("server started and listening :=" + server.address().address + ":" + server.address().port);
 })

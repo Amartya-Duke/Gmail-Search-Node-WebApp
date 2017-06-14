@@ -9,8 +9,7 @@ var model = (function() {
         messages: [{
             id: String,
             snippet: String
-        }],
-        historyId: String
+        }]
     });
 
     var selectTable = function(args) {
@@ -29,13 +28,21 @@ var model = (function() {
 
     }
 
-    var fetchData = function(callback) {
-        selectTable('threads').find(callback);
+    var fetchData = function(query, callback) {
+        // var q = {};
+        // var q = '{snippet:/' + query + '/i}';
+        // console.log(q)
+        selectTable('threads').find({ snippet: { $regex: query } }, callback);
+    }
+
+    var deleteData = function(callback) {
+        selectTable('threads').remove({}, callback);
     }
 
     return {
         storeThreads,
-        fetchData
+        fetchData,
+        deleteData
     }
     //  mongod --dbpath "C:\Users\amart_000\Desktop\NodeWebApp\Gmail-Search-Node-WebApp\db"
 })()
