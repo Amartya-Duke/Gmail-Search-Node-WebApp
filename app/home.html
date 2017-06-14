@@ -15,11 +15,13 @@
     <div class="row">
         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
             <button type="submit" class="btn refresh" id="refresh">Refresh</button>
+            <p class="last-refresh green" id="last-refresh"></p>
         </div>
         <div class="col-lg-6 col-md-6 col-md-6 col-sm-6 col-xs-6">
             <div class="row">
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
                     <input type="search" name="search" class="search-input" id="search-input" placeholder="Enter keywords to search">
+                    <p class="green">Use keyword <b>{{all}}</b> to fetch all data</p>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
                     <button type="submit" class="btn search-submit-btn" id="search-submit-btn">Submit</button>

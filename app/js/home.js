@@ -1,6 +1,19 @@
 $(function() {
+    getLastRefresh();
 
-
+    function getLastRefresh() {
+        $.ajax({
+            type: 'GET',
+            url: 'http://127.0.0.1:8080/lastRefresh/',
+            success: function(data) {
+                console.log(data)
+                $('#last-refresh').html('Last refreshed: ' + data)
+            },
+            error: function(err) {
+                console.log(err)
+            }
+        });
+    }
 
     bindListners();
 
@@ -15,6 +28,9 @@ $(function() {
         event.preventDefault();
         $('.loading').hide();
         var query = $('#search-input').val();
+        if (query == "") {
+            alert('Use keyword {{all}} to fetch entire data')
+        }
         console.log(query)
         $.ajax({
             type: 'POST',
@@ -51,9 +67,12 @@ $(function() {
             contentType: "application/json; charset=utf-8",
             success: function(data) {
                 console.log(data)
+                $('.loading img').hide();
                 if (data.success) {
-                    $('.loading img').hide();
-                    $('.loading p').html(data.count + ' threads downloaded from your inbox')
+                    $('.loading p').html(data.count + ' threads downloaded from your inbox');
+                    $('.last-refresh').html('Last refreshed: ' + data.lastRefresh)
+                } else {
+                    $('.loading p').html('Error:' + data.err)
                 }
             },
             error: function(err) {

@@ -40,9 +40,17 @@ var requester = (function() {
             promises.push(getMessagesFromThreadId(userId, token[i], auth));
         }
         Promise.all(promises).then(function(data) {
-            console.log('Saved!');
-            callback(data)
-        })
+                console.log('Saved!');
+                var json = {};
+                json.success = true;
+                json.data = data;
+                callback(json)
+            })
+            .catch(function(err) {
+                var json = {};
+                json.success = false;
+                json.err = JSON.stringify(err);
+            })
     }
 
     function retrieveMailThreads(userId, noOfDays, auth, callback) {

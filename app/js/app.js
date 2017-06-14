@@ -79,16 +79,27 @@ app.post('/getThreads/:days', function(request, response) {
         console.log(res)
         if (res.success) {
             requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
-
-                model.storeThreads(data, function(err, data) {
+                if (!data.success) {
+                    return response.json(data);
+                }
+                model.storeThreads(data.data, function(err, data) {
                     if (err) {
                         console.log(err);
                         res.err = err;
                     } else {
                         console.log('Stored in database')
                         res.count = data.length;
+                        model.getLastRefresh(function(err, data) {
+                            if (data.length == 0)
+                                res.lastRefresh = 'never';
+                            else
+                                res.lastRefresh = data[data.length - 1].lastRefresh;
+
+                            response.json(res);
+                        })
+
                     }
-                    response.json(res);
+
                 });
             })
         } else {
@@ -100,6 +111,10 @@ app.post('/getThreads/:days', function(request, response) {
 
 app.post('/fetchData/:query', function(request, response) {
     var query = request.params.query;
+
+    if (query == "{{all}}")
+        query = null;
+    console.log(query)
     model.fetchData(query, function(err, data) {
         if (err) {
             console.log('here')
@@ -109,7 +124,18 @@ app.post('/fetchData/:query', function(request, response) {
     })
 })
 
-
+app.get('/lastRefresh', function(request, response) {
+    model.getLastRefresh(function(err, data) {
+        if (err)
+            response.send(err);
+        else {
+            if (data.length == 0)
+                response.send('never');
+            else
+                response.send(data[data.length - 1].lastRefresh)
+        }
+    })
+})
 
 /* starting server at port 8080*/
 var server = app.listen(8080, function() {

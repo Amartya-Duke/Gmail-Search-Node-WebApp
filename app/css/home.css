@@ -5,6 +5,10 @@
     text-align: center;
 }
 
+.green {
+    color: green
+}
+
 .loading {
     display: none;
     text-align: center;
