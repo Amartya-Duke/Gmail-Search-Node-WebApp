@@ -5,6 +5,21 @@
     text-align: center;
 }
 
+.loading {
+    display: none;
+    text-align: center;
+}
+
+.loading img {
+    width: 400px;
+    height: 400px;
+}
+
+.loading p {
+    color: green;
+    font-size: 20px;
+}
+
 .increase-size {
     font-weight: bold;
     font-size: 20px;

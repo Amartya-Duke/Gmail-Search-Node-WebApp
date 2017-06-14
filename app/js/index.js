@@ -6,8 +6,8 @@ $(function() {
     function bindListner() {
         $('#login').on('click', function(event) {
             event.preventDefault();
-            $('#code').show();
-            $('#codeSubmit').show();
+            $('#code').show(1000);
+            $('#codeSubmit').show(1000);
             login(function(data) {
                 window.open(data.redirectUrl, "Authorize access to your gmail account", "width=500,height=500");
             })
@@ -64,14 +64,6 @@ $(function() {
             }
         });
     }
-
-    $('.errorLogin').hide();
-
-
-
-
-
-
 
     function getMessages(event) {
         var clickedRow = event.currentTarget;

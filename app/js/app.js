@@ -81,13 +81,14 @@ app.post('/getThreads/:days', function(request, response) {
             requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
 
                 model.storeThreads(data, function(err, data) {
-                    if (err)
+                    if (err) {
                         console.log(err);
-                    else {
+                        res.err = err;
+                    } else {
                         console.log('Stored in database')
-                        res.data = data;
-                        response.json(res);
+                        res.count = data.length;
                     }
+                    response.json(res);
                 });
             })
         } else {
@@ -99,7 +100,6 @@ app.post('/getThreads/:days', function(request, response) {
 
 app.post('/fetchData/:query', function(request, response) {
     var query = request.params.query;
-    console.log('abc')
     model.fetchData(query, function(err, data) {
         if (err) {
             console.log('here')
@@ -109,35 +109,6 @@ app.post('/fetchData/:query', function(request, response) {
     })
 })
 
-app.get('/getMessagesFromThreadId/:threadId', function(request, response) {
-    var threadId = request.params.threadId;
-    authenticator.authenticate(function(res, oauth2Client) {
-        if (res.success) {
-            requester.getMessagesFromThreadId('me', threadId, oauth2Client)
-                .then(function(data) {
-                    console.log(data)
-                    model.storeThreads(data, function(err, data) {
-                        if (err)
-                            console.log(err);
-                        else {
-                            console.log('Stored in database')
-                            res.data = data;
-                            response.json(data);
-                        }
-                    });
-                })
-                .catch(function(err) {
-                    console.log(err)
-                })
-
-        } else {
-            authenticator.refreshToken(data, function(res, oauth2Client) {
-                response.json(res);
-            })
-        }
-    })
-
-})
 
 
 /* starting server at port 8080*/

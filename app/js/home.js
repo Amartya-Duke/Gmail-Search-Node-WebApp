@@ -13,6 +13,7 @@ $(function() {
 
     function search(event) {
         event.preventDefault();
+        $('.loading').hide();
         var query = $('#search-input').val();
         console.log(query)
         $.ajax({
@@ -32,11 +33,17 @@ $(function() {
 
     function refresh(event) {
         event.preventDefault();
+
         var noOfDays = prompt('Enter no of days of history you want to fetch from your Gmail account:');
         if (isNaN(noOfDays)) {
             alert("Please enter only numeric values");
             return;
         }
+        $('#msg').hide();
+        $('#wrapper').html("");
+        $('.loading').show();
+        $('.loading img').show();
+        $('.loading p').html('Please wait while your inbox is downloaded')
         $.ajax({
             type: 'POST',
             url: 'http://127.0.0.1:8080/getThreads/' + noOfDays,
@@ -45,9 +52,8 @@ $(function() {
             success: function(data) {
                 console.log(data)
                 if (data.success) {
-                    window.location = "index.html"
-                } else {
-                    alert('Error loging out' + data.err);
+                    $('.loading img').hide();
+                    $('.loading p').html(data.count + ' threads downloaded from your inbox')
                 }
             },
             error: function(err) {
