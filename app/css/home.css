@@ -1,7 +1,22 @@
 #msg {
+    display: none;
     color: green;
     font-weight: 10px;
     text-align: center;
+}
+
+.increase-size {
+    font-weight: bold;
+    font-size: 20px;
+    color: yellow
+}
+
+.show {
+    display: block;
+}
+
+.threads>div:last-child {
+    display: none;
 }
 
 .search-submit-btn {

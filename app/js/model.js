@@ -29,10 +29,7 @@ var model = (function() {
     }
 
     var fetchData = function(query, callback) {
-        // var q = {};
-        // var q = '{snippet:/' + query + '/i}';
-        // console.log(q)
-        selectTable('threads').find({ snippet: { $regex: query } }, callback);
+        selectTable('threads').find({ snippet: new RegExp(query, "i") }, callback);
     }
 
     var deleteData = function(callback) {
