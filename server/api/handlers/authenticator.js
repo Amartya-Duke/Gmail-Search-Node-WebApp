@@ -12,7 +12,7 @@ var authenticator = (function() {
     var TOKEN_PATH = TOKEN_DIR + 'gmail-nodejs-quickstart.json';
 
     function getCredentials(callback) {
-        fs.readFile(path.join(__dirname, '../') + 'client_secret.json', function(err, response) {
+        fs.readFile(path.join(__dirname, '../secret/') + 'client_secret.json', function(err, response) {
             if (err)
                 throw err;
             callback(JSON.parse(response));
@@ -65,7 +65,6 @@ var authenticator = (function() {
                     });
                 }
             });
-            // });
         })
 
     }
@@ -84,21 +83,22 @@ var authenticator = (function() {
         })
     }
 
-    function authenticate(callback) {
-        getCredentials(function(credentials) {
-            var jsonResponse = {};
-            authorize(credentials)
-                .then(function(auth) {
-                    jsonResponse.success = true;
-                    callback(jsonResponse, auth);
-                })
-                .catch(function(authUrl) {
-                    jsonResponse.success = false;
-                    jsonResponse.redirectUrl = authUrl;
-                    callback(jsonResponse);
-                })
+    function authenticate() {
+        return new Promise(function(resolve, reject) {
+            getCredentials(function(credentials) {
+                var jsonResponse = {};
+                authorize(credentials)
+                    .then(function(auth) {
+                        jsonResponse.success = true;
+                        resolve([jsonResponse, auth]);
+                    })
+                    .catch(function(authUrl) {
+                        jsonResponse.success = false;
+                        jsonResponse.redirectUrl = authUrl;
+                        reject(jsonResponse);
+                    })
+            })
         })
-
     }
 
     function refreshToken(code, callback) {

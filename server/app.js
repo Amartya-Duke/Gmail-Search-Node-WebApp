@@ -4,15 +4,18 @@ var readline = require('readline');
 var googleAuth = require('google-auth-library');
 var path = require('path');
 var bodyParser = require("body-parser");
-var authenticator = require('./authenticator.js');
-var requester = require('./requester.js');
-var model = require('./model.js');
 var rp = require('request-promise');
 var mongoose = require('mongoose');
+
+var authenticator = require('./api/handlers/authenticator.js');
+var requester = require('./api/handlers/requester.js');
+var model = require('./api/model/model.js');
+
+
 var app = express();
 
 app.use(bodyParser.json());
-app.use("/", express.static(path.join(__dirname, '../')));
+app.use("/", express.static(path.join(__dirname, '../client/')));
 
 mongoose.connect('127.0.0.1:27017/gmailStore');
 var db = mongoose.connection;
@@ -27,13 +30,18 @@ var allowCrossDomain = function(req, res, next) {
 }
 app.use(allowCrossDomain);
 
-app.post('/login', function(req, res) {
+app.post('/app/login', function(req, res) {
     var token = req.body.token;
     console.log(token + ' token')
     if (!token) {
-        authenticator.authenticate(function(data, oauth2Client) {
-            res.send(data);
-        })
+        authenticator.authenticate()
+            .then(function([data, auth]) {
+                res.send(data);
+            })
+            .catch(function(err) {
+                console.log('here')
+                res.send(err)
+            })
     } else {
         authenticator.refreshToken(token, function(data, oauth2Client) {
             res.json(data);
@@ -41,7 +49,7 @@ app.post('/login', function(req, res) {
     }
 });
 
-app.post('/logout', function(request, response) {
+app.post('/app/logout', function(request, response) {
     var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
         process.env.USERPROFILE) + '/.credentials/';
 
@@ -71,60 +79,49 @@ app.post('/logout', function(request, response) {
     })
 })
 
-app.post('/getThreads/:days', function(request, response) {
+app.post('/app/threads/:days', function(request, response) {
     var noOfDays = request.params.days;
-    console.log(noOfDays)
+    console.log('no of days requested:' + noOfDays)
+    var res = {};
+    authenticator.authenticate()
+        .then(function([jsonResponse, oauth2Client]) {
+            console.log('stage 1 ')
+            return requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client)
+        })
+        .then(function(data) {
+            console.log('stage 2')
+            res.count = data.data.length;
+            console.log('data length:' + data.data.length)
+            return model.storeThreads(data.data);
+        })
+        .then(function(data) {
+            console.log('stage 3')
+            res.success = true;
+            res.lastRefresh = data;
+            response.json(res);
+        })
+        .catch(function(err) {
+            response.json(err)
+        });
 
-    authenticator.authenticate(function(res, oauth2Client) {
-        console.log(res)
-        if (res.success) {
-            requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client, function(data) {
-                if (!data.success) {
-                    return response.json(data);
-                }
-                model.storeThreads(data.data, function(err, data) {
-                    if (err) {
-                        console.log(err);
-                        res.err = err;
-                    } else {
-                        console.log('Stored in database')
-                        res.count = data.length;
-                        model.getLastRefresh(function(err, data) {
-                            if (data.length == 0)
-                                res.lastRefresh = 'never';
-                            else
-                                res.lastRefresh = data[data.length - 1].lastRefresh;
-
-                            response.json(res);
-                        })
-
-                    }
-
-                });
-            })
-        } else {
-            response.json(res)
-        }
-    })
 
 });
 
-app.post('/fetchData/:query', function(request, response) {
+app.get('/app/data/:query', function(request, response) {
     var query = request.params.query;
 
     if (query == "{{all}}")
         query = null;
-    console.log(query)
+    console.log('query:' + yquery)
     model.fetchData(query, function(err, data) {
         if (err) {
-            console.log('here')
             response.json(err)
         } else
             response.json(data)
     })
 })
 
-app.get('/lastRefresh', function(request, response) {
+app.get('/app/refresh', function(request, response) {
     model.getLastRefresh(function(err, data) {
         if (err)
             response.send(err);

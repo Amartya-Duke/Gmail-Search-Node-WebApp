@@ -35,21 +35,23 @@ var requester = (function() {
     function storeMessage(userId, token, auth, callback) {
 
         var promises = [];
-        console.log(token.length + ' token lengh')
+        console.log(' token length :' + token.length)
         for (var i = 0; i < token.length; i++) {
             promises.push(getMessagesFromThreadId(userId, token[i], auth));
         }
         Promise.all(promises).then(function(data) {
-                console.log('Saved!');
+                console.log('All threads ran successfully');
                 var json = {};
                 json.success = true;
                 json.data = data;
                 callback(json)
             })
             .catch(function(err) {
+                console.log(err)
                 var json = {};
                 json.success = false;
                 json.err = JSON.stringify(err);
+                callback(json)
             })
     }
 
@@ -70,47 +72,62 @@ var requester = (function() {
             });
     }
 
-    function retrieveMailThreadsUsingGoogleAPIs(userId, noOfDays, auth, callback) {
-        var gmail = google.gmail('v1');
-        var query = 'after:' + getDate(noOfDays).from.toString();
-        console.log(query)
-        var result = [];
-        gmail.users.threads.list({
-            auth: auth,
-            userId: 'me',
-            q: query,
-        }, function(err, response) {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-                return;
-            }
-            result = result.concat(response.threads);
-            if (response.nextPageToken)
-                getNextPageOfThreads(response.nextPageToken, result);
-            else {
-                storeMessage(userId, result, auth, callback)
-            }
-        });
-
-        function getNextPageOfThreads(nextPageToken, result) {
+    function retrieveMailThreadsUsingGoogleAPIs(userId, noOfDays, auth) {
+        return new Promise(function(resolve, reject) {
+            var gmail = google.gmail('v1');
+            var query = 'after:' + getDate(noOfDays).from.toString();
+            console.log(query)
+            var result = [];
             gmail.users.threads.list({
                 auth: auth,
-                userId: userId,
+                userId: 'me',
                 q: query,
-                pageToken: nextPageToken
             }, function(err, response) {
                 if (err) {
-                    console.log('The API returned an error: ' + err);
+                    reject('The API returned an error: ' + err);
                     return;
                 }
                 result = result.concat(response.threads);
                 if (response.nextPageToken)
                     getNextPageOfThreads(response.nextPageToken, result);
                 else {
-                    storeMessage(userId, result, auth, callback)
+                    console.log('--------------------------------------')
+                    storeMessage(userId, result, auth, function(response) {
+                        if (response.success)
+                            resolve(response);
+                        else
+                            reject(response);
+                    })
                 }
             });
-        }
+
+            function getNextPageOfThreads(nextPageToken, result) {
+                gmail.users.threads.list({
+                    auth: auth,
+                    userId: userId,
+                    q: query,
+                    pageToken: nextPageToken
+                }, function(err, response) {
+                    if (err) {
+                        console.log('The API returned an error: ' + err);
+                        return;
+                    }
+                    result = result.concat(response.threads);
+                    if (response.nextPageToken)
+                        getNextPageOfThreads(response.nextPageToken, result);
+                    else {
+                        console.log('********************************88')
+                        storeMessage(userId, result, auth, function(respose) {
+                            if (response.success)
+                                resolve(response);
+                            else
+                                reject(response);
+                        })
+                    }
+                });
+            }
+        });
+
 
     }
 

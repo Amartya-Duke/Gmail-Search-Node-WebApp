@@ -46,7 +46,7 @@ $(function() {
         }
         $.ajax({
             type: 'POST',
-            url: 'http://127.0.0.1:8080/login',
+            url: 'http://127.0.0.1:8080/app/login',
             data: JSON.stringify(jsonData),
             dataType: 'json',
             contentType: "application/json; charset=utf-8",
@@ -65,29 +65,7 @@ $(function() {
         });
     }
 
-    function getMessages(event) {
-        var clickedRow = event.currentTarget;
-        console.log(clickedRow)
-        var id = clickedRow.getAttribute('id');
 
-        $.ajax({
-            type: 'GET',
-            url: 'http://127.0.0.1:8080/getMessagesFromThreadId/' + id,
-            success: function(data) { //console.log(clickedRow.childNodes[2].childNodes[0])
-                console.log(data.data.messages)
-                var messageRow = "";
-                var messageDiv = document.createElement('div');
-                messageDiv.className = "messages";
-                for (var i = 0; i < data.data.messages.length; i++) {
-                    var messageRow = document.createElement('div');
-                    messageRow.className = 'singlemessages';
-                    messageRow.innerHTML = data.data.messages[i].snippet;
-                    messageDiv.appendChild(messageRow);
-                }
-                document.getElementById(id).appendChild(messageDiv)
-            }
-        });
-    }
 
 
 })

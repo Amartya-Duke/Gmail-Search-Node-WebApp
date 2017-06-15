@@ -4,7 +4,7 @@ $(function() {
     function getLastRefresh() {
         $.ajax({
             type: 'GET',
-            url: 'http://127.0.0.1:8080/lastRefresh/',
+            url: 'http://127.0.0.1:8080/app/refresh/',
             success: function(data) {
                 console.log(data)
                 $('#last-refresh').html('Last refreshed: ' + data)
@@ -33,8 +33,8 @@ $(function() {
         }
         console.log(query)
         $.ajax({
-            type: 'POST',
-            url: 'http://127.0.0.1:8080/fetchData/' + query,
+            type: 'GET',
+            url: 'http://127.0.0.1:8080/app/data/' + query,
             dataType: 'json',
             contentType: "application/json; charset=utf-8",
             success: function(data) {
@@ -62,7 +62,7 @@ $(function() {
         $('.loading p').html('Please wait while your inbox is downloaded')
         $.ajax({
             type: 'POST',
-            url: 'http://127.0.0.1:8080/getThreads/' + noOfDays,
+            url: 'http://127.0.0.1:8080/app/threads/' + noOfDays,
             dataType: 'json',
             contentType: "application/json; charset=utf-8",
             success: function(data) {
@@ -87,7 +87,7 @@ $(function() {
         if (confirm('Are you sure to logout ?')) {
             $.ajax({
                 type: 'POST',
-                url: 'http://127.0.0.1:8080/logout',
+                url: 'http://127.0.0.1:8080/app/logout',
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(data) {

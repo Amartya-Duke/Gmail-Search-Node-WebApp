@@ -21,22 +21,32 @@ var model = (function() {
         if (args == 'refresh')
             return mongoose.model('refresh', refreshSchema);
     }
-    var storeThreads = function(arrayOfThreads, callback) {
-        // console.log(arrayOfThreads)
+    var storeThreads = function(arrayOfThreads) {
+
         var threads = selectTable('threads');
         var refresh = selectTable('refresh');
-        threads.remove({}, function(err, data) {
-            if (err) {
-                callback('error clearing database', null);
-            }
-            threads.create(arrayOfThreads, callback);
-            refresh.create({ lastRefresh: new Date().toDateString() + ' ' + new Date().toLocaleTimeString() }, function(err, data) {
-                if (err)
-                    console.log(err)
-                else
-                    console.log('refresh data stored')
+        return new Promise(function(resolve, reject) {
+            threads.remove({}, function(err, data) {
+                if (err) {
+                    reject('error clearing database', null);
+                }
+                threads.create(arrayOfThreads, function(err, data) {
+                    if (err) {
+                        reject(err)
+                        return;
+                    }
+                    var refreshData = new Date().toDateString() + ' ' + new Date().toLocaleTimeString();
+                    refresh.create({ lastRefresh: refreshData }, function(err, data) {
+                        if (err)
+                            reject(err)
+                        else
+                            resolve(refreshData)
+                    })
+                });
+
             })
         })
+
 
     }
 
@@ -62,6 +72,6 @@ var model = (function() {
         deleteData,
         getLastRefresh
     }
-    //  mongod --dbpath "C:\Users\amart_000\Desktop\NodeWebApp\Gmail-Search-Node-WebApp\db"
+    //  mongod --dbpath "C:\Users\amart_000\Desktop\NodeWebApp\Gmail-Search-Node-WebApp\server\db"
 })()
 module.exports = model;
