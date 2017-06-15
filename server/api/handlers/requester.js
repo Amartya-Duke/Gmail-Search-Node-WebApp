@@ -2,7 +2,6 @@ var rp = require('request-promise');
 var path = require('path');
 var fs = require('fs');
 var google = require('googleapis');
-var base64 = require('js-base64').Base64;
 var requester = (function() {
 
     var THRESHOLD_LIMIT = 30;
