@@ -118,14 +118,22 @@ $(function() {
             mainDiv.id = data[i].id;
 
             var divThread = document.createElement('div');
-            divThread.innerHTML = data[i].snippet.replace(new RegExp(query, "ig"), '<span class="increase-size">' + query.toLowerCase() + '</span>');
+            divThread.innerHTML = '<div style="float:right;font-weight:bold">[' + data[i].messages.length + ']</div>'
+            divThread.innerHTML += data[i].snippet.replace(new RegExp(query, "ig"), '<span class="increase-size">' + query.toLowerCase() + '</span>');
 
             var messageDiv = document.createElement('div');
             messageDiv.className = "messages";
             for (var j = 0; j < data[i].messages.length; j++) {
                 var messageRow = document.createElement('div');
                 messageRow.className = 'singlemessages';
-                messageRow.innerHTML = data[i].messages[j].snippet.replace(new RegExp(query, "ig"), '<span class="increase-size">' + query.toLowerCase() + '</span>');
+                var span = document.createElement('span');
+                span.setAttribute('style', 'display: block; font-weight: bold ');
+                span.innerHTML = 'in[' + data[i].messages[j].labelIds + ']<div style="float:right;font-weight:bold">' + data[i].messages[j].internalDate + '</div>';
+                var subdiv = document.createElement('div');
+                subdiv.innerHTML += '<div>' + data[i].messages[j].snippet.replace(new RegExp(query, "ig"), '<span class="increase-size">' + query.toLowerCase() + '</span>') + '</div>';
+
+                messageRow.appendChild(span);
+                messageRow.appendChild(subdiv)
                 messageDiv.appendChild(messageRow);
             }
             mainDiv.appendChild(divThread);

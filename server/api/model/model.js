@@ -8,7 +8,10 @@ var model = (function() {
         historyId: String,
         messages: [{
             id: String,
-            snippet: String
+            snippet: String,
+            labelIds: String,
+            internalDate: String,
+            mimeType: String
         }]
     });
 

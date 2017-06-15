@@ -2,6 +2,7 @@ var rp = require('request-promise');
 var path = require('path');
 var fs = require('fs');
 var google = require('googleapis');
+var base64 = require('js-base64').Base64;
 var requester = (function() {
 
     var THRESHOLD_LIMIT = 30;
@@ -66,13 +67,13 @@ var requester = (function() {
                     }
                     var temp = ((token.length - till) > THRESHOLD_LIMIT) ? (THRESHOLD_LIMIT) : (token.length - till);
 
-                    takeBreakAndMakeAsyncCall(till, till + temp);
+                    makeAjaxCallInBatches(till, till + temp);
                 })
                 .catch(function(err) {
-                    console.log('Some threads returned error')
+                    console.log('Some threads returned error' + err)
                     var json = {};
                     json.success = false;
-                    json.err = JSON.stringify(err);
+                    json.err = err.message;
                     callback(json)
                 })
         }
@@ -81,7 +82,7 @@ var requester = (function() {
     }
 
 
-    //making request using the request-promise library
+    //making request using the request-promise library, this function is unused
     function retrieveMailThreads(userId, noOfDays, auth, callback) {
         var query = 'after:' + getDate(noOfDays).from.toString();
         var options = getOptions(userId, query, 'threads', auth);
@@ -119,8 +120,10 @@ var requester = (function() {
                     storeMessage(userId, result, auth, function(response) {
                         if (response.success)
                             resolve(response);
-                        else
+                        else {
+                            console.log(response)
                             reject(response);
+                        }
                     })
                 }
             });
@@ -173,7 +176,10 @@ var requester = (function() {
                     for (var i = 0; i < response.messages.length; i++) {
                         var message = {};
                         message.id = response.messages[i].id;
+                        message.labelIds = response.messages[i].labelIds.join();
                         message.snippet = response.messages[i].snippet;
+                        message.internalDate = new Date(parseInt(response.messages[i].internalDate)).toLocaleDateString() + ' ' + new Date(parseInt(response.messages[i].internalDate)).toLocaleTimeString();
+                        message.mimeType = response.messages[i].payload.mimeType;
                         messageArray.push(message);
                     }
                     thread.messages = messageArray;

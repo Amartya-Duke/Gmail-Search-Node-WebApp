@@ -89,6 +89,7 @@ app.post('/app/threads/:days', function(request, response) {
             return requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client)
         })
         .then(function(data) {
+            console.log(data.data[0])
             console.log('stage 2')
             res.count = data.data.length;
             console.log('data length:' + data.data.length)
