@@ -1,5 +1,6 @@
 $(function() {
     getLastRefresh();
+    bindListners();
 
     function getLastRefresh() {
         $.ajax({
@@ -14,8 +15,6 @@ $(function() {
             }
         });
     }
-
-    bindListners();
 
     function bindListners() {
         $('#refresh').on('click', refresh);
