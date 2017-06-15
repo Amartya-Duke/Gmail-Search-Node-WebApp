@@ -109,10 +109,10 @@ app.post('/app/threads/:days', function(request, response) {
 
 app.get('/app/data/:query', function(request, response) {
     var query = request.params.query;
-
+    console.log('query:' + query)
     if (query == "{{all}}")
         query = null;
-    console.log('query:' + yquery)
+
     model.fetchData(query, function(err, data) {
         if (err) {
             response.json(err)

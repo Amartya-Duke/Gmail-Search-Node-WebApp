@@ -3,6 +3,9 @@ var path = require('path');
 var fs = require('fs');
 var google = require('googleapis');
 var requester = (function() {
+
+    var THRESHOLD_LIMIT = 30;
+
     function getOptions(userId, query, type, auth) {
 
         var options = {
@@ -34,40 +37,62 @@ var requester = (function() {
 
     function storeMessage(userId, token, auth, callback) {
 
-        var promises = [];
+        var progress = 0;
         console.log(' token length :' + token.length)
-        for (var i = 0; i < token.length; i++) {
-            promises.push(getMessagesFromThreadId(userId, token[i], auth));
+        if (token.length > THRESHOLD_LIMIT)
+            makeAjaxCallInBatches(0, THRESHOLD_LIMIT);
+        else
+            makeAjaxCallInBatches(0, token.length)
+        var i;
+        var totalData = [];
+
+        function makeAjaxCallInBatches(initial, till) {
+            var promises = [];
+            for (i = initial; i < till; i++) {
+                promises.push(getMessagesFromThreadId(userId, token[i], auth));
+            }
+            Promise.all(promises)
+                .then(function(data) {
+                    progress = (till / token.length) * 100;
+                    console.log("progress:" + parseInt(progress) + "%")
+
+                    totalData = totalData.concat(data);
+                    if (till == token.length) {
+                        console.log('All threads ran successfully');
+                        var json = {};
+                        json.success = true;
+                        json.data = totalData;
+                        return callback(json)
+                    }
+                    var temp = ((token.length - till) > THRESHOLD_LIMIT) ? (THRESHOLD_LIMIT) : (token.length - till);
+
+                    takeBreakAndMakeAsyncCall(till, till + temp);
+                })
+                .catch(function(err) {
+                    console.log('Some threads returned error')
+                    var json = {};
+                    json.success = false;
+                    json.err = JSON.stringify(err);
+                    callback(json)
+                })
         }
-        Promise.all(promises).then(function(data) {
-                console.log('All threads ran successfully');
-                var json = {};
-                json.success = true;
-                json.data = data;
-                callback(json)
-            })
-            .catch(function(err) {
-                console.log(err)
-                var json = {};
-                json.success = false;
-                json.err = JSON.stringify(err);
-                callback(json)
-            })
+
+
     }
 
+
+    //making request using the request-promise library
     function retrieveMailThreads(userId, noOfDays, auth, callback) {
         var query = 'after:' + getDate(noOfDays).from.toString();
         var options = getOptions(userId, query, 'threads', auth);
         rp(options)
             .then(function(parsedBody) {
-                // Process html like you would with jQuery...
                 var result = [];
                 result = result.concat(parsedBody.threads);
                 storeMessage(userId, result, auth, callback);
                 console.log('stored in file')
             })
             .catch(function(err) {
-                // Crawling failed or Cheerio choked...
                 console.log(err.message)
             });
     }
@@ -91,7 +116,6 @@ var requester = (function() {
                 if (response.nextPageToken)
                     getNextPageOfThreads(response.nextPageToken, result);
                 else {
-                    console.log('--------------------------------------')
                     storeMessage(userId, result, auth, function(response) {
                         if (response.success)
                             resolve(response);
@@ -102,6 +126,7 @@ var requester = (function() {
             });
 
             function getNextPageOfThreads(nextPageToken, result) {
+                console.log('--------getting token from next page--------')
                 gmail.users.threads.list({
                     auth: auth,
                     userId: userId,
@@ -116,8 +141,7 @@ var requester = (function() {
                     if (response.nextPageToken)
                         getNextPageOfThreads(response.nextPageToken, result);
                     else {
-                        console.log('********************************88')
-                        storeMessage(userId, result, auth, function(respose) {
+                        storeMessage(userId, result, auth, function(response) {
                             if (response.success)
                                 resolve(response);
                             else
@@ -152,7 +176,6 @@ var requester = (function() {
                         message.snippet = response.messages[i].snippet;
                         messageArray.push(message);
                     }
-
                     thread.messages = messageArray;
 
                     resolve(thread);

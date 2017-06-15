@@ -63,8 +63,6 @@ $(function() {
         $.ajax({
             type: 'POST',
             url: 'http://127.0.0.1:8080/app/threads/' + noOfDays,
-            dataType: 'json',
-            contentType: "application/json; charset=utf-8",
             success: function(data) {
                 console.log(data)
                 $('.loading img').hide();

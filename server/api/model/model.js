@@ -32,14 +32,18 @@ var model = (function() {
                 }
                 threads.create(arrayOfThreads, function(err, data) {
                     if (err) {
-                        reject(err)
+                        {
+                            console.log('error here')
+                            reject(err)
+                        }
                         return;
                     }
                     var refreshData = new Date().toDateString() + ' ' + new Date().toLocaleTimeString();
                     refresh.create({ lastRefresh: refreshData }, function(err, data) {
-                        if (err)
+                        if (err) {
+                            console.log('error here d')
                             reject(err)
-                        else
+                        } else
                             resolve(refreshData)
                     })
                 });
