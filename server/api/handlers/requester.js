@@ -36,7 +36,7 @@ var requester = (function() {
 
 
     function storeMessage(userId, token, auth, callback) {
-
+        var totalMessages = 0;
         var progress = 0;
         console.log(' token length :' + token.length)
         if (token.length > THRESHOLD_LIMIT)
@@ -45,6 +45,7 @@ var requester = (function() {
             makeAjaxCallInBatches(0, token.length)
         var i;
         var totalData = [];
+        var totalCount = 0;
 
         function makeAjaxCallInBatches(initial, till) {
             var promises = [];
@@ -53,6 +54,8 @@ var requester = (function() {
             }
             Promise.all(promises)
                 .then(function(data) {
+                    for (var jss = 0; jss < data.length; jss++)
+                        totalCount += data[jss].count;
                     progress = (till / token.length) * 100;
                     console.log("progress:" + parseInt(progress) + "%")
 
@@ -62,6 +65,7 @@ var requester = (function() {
                         var json = {};
                         json.success = true;
                         json.data = totalData;
+                        json.messageCount = totalCount;
                         return callback(json)
                     }
                     var temp = ((token.length - till) > THRESHOLD_LIMIT) ? (THRESHOLD_LIMIT) : (token.length - till);
@@ -181,6 +185,7 @@ var requester = (function() {
                         message.mimeType = response.messages[i].payload.mimeType;
                         messageArray.push(message);
                     }
+                    thread.count = messageArray.length;
                     thread.messages = messageArray;
 
                     resolve(thread);

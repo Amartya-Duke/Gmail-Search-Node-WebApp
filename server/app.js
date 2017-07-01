@@ -85,14 +85,16 @@ app.post('/app/threads/:days', function(request, response) {
     var res = {};
     authenticator.authenticate()
         .then(function([jsonResponse, oauth2Client]) {
-            console.log('stage 1 ')
+            console.log('stage 1 ');
             return requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client)
         })
         .then(function(data) {
-            console.log(data.data[0])
-            console.log('stage 2')
-            res.count = data.data.length;
-            console.log('data length:' + data.data.length)
+            console.log('stage 2');
+            console.log('Total Message count : ' + data.messageCount);
+            res.messageCount = data.messageCount;
+            res.threadCount = data.data.length;
+            console.log('Total Thread count:' + data.data.length);
+
             return model.storeThreads(data.data);
         })
         .then(function(data) {

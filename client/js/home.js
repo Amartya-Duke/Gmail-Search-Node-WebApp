@@ -66,7 +66,7 @@ $(function() {
                 console.log(data)
                 $('.loading img').hide();
                 if (data.success) {
-                    $('.loading p').html(data.count + ' threads downloaded from your inbox');
+                    $('.loading p').html(data.threadCount + ' threads containing ' + data.messageCount + ' messages downloaded from your inbox \n ');
                     $('.last-refresh').html('Last refreshed: ' + data.lastRefresh)
                 } else {
                     $('.loading p').html('Error:' + data.err)
