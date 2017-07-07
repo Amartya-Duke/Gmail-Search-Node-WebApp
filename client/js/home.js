@@ -98,10 +98,10 @@ $(function() {
 
     function populateRefreshInfo(data) {
         if (data.lastRefresh == undefined)
-            data.lastRefresh = 'never';
-        $('#last-refresh').html('Last refreshed: ' + data[0].lastRefresh);
-        if (data.length != 0)
-            $('#info').html('<span style="font-weight:bold">' + data[0].messageDownloadedCount + ' messages downloaded of ' + data[0].totalMessageCount + ' messages' + '</span>')
+            $('#last-refresh').html('Last refreshed: never');
+
+        $('#last-refresh').html('Last refreshed: ' + data.lastRefresh);
+        $('#info').html('<span style="font-weight:bold">' + data.messageDownloadedCount + ' messages downloaded of ' + data.totalMessageCount + ' messages' + '</span>')
     }
 
     function getCookie(cname) {

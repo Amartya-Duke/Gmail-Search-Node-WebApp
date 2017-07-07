@@ -1,16 +1,9 @@
 $(function() {
     bindListner();
-    login();
-    var redirectUrl;
+    login(false);
 
     function bindListner() {
-        $('#loading').show();
-        $('#login').hide();
-        $('#code').show(1000);
-        $('#codeSubmit').show(1000);
-        $('.loading').hide();
-        $('#codeSubmit').on('click', processAuthentication);
-
+        $('#login').on('click', login);
     }
 
     function processAuthentication(event) {
@@ -44,19 +37,12 @@ $(function() {
         return "";
     }
 
-    function login(parameter1, parameter2) {
+    function login(flag) {
         var email = getCookie("email");
         var loginData, callback;
         var jsonData = {};
-
-        console.log(document.cookie)
-        if (typeof parameter1 === "function") {
-            callback = parameter1;
-        } else if (parameter1 && (typeof parameter2 === "function")) {
-            jsonData.token = parameter1;
-            callback = parameter2;
-        }
         jsonData.email = email;
+
         $.ajax({
             type: 'POST',
             url: 'http://127.0.0.1:8080/app/login',
@@ -69,14 +55,10 @@ $(function() {
                     document.cookie = "email=" + data.email;
                     window.location = 'home.html'
                 } else {
-                    if (callback)
-                        callback(data)
-                    console.log(data.redirectUrl)
-                    $('#login').attr('href', data.redirectUrl);
-                    $('#loading').hide();
-                    $('#login').show();
-                    $('#code').show(1000);
-                    $('#codeSubmit').show(1000);
+                    if (flag != false) {
+                        console.log('s')
+                        window.open(data.redirectUrl, "_self");
+                    }
                 }
             },
             error: function(err) {

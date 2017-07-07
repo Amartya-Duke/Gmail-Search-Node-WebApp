@@ -30,27 +30,26 @@ var allowCrossDomain = function(req, res, next) {
 }
 app.use(allowCrossDomain);
 
+app.get('/authorize', function(req, res) {
+    var code = req.query.code;
+    authenticator.refreshToken(code, function(data, oauth2Client) {
+        res.cookie("email", data.email);
+        res.redirect('/home.html');
+    })
+})
+
 app.post('/app/login', function(req, res) {
-    var token = req.body.token;
 
     var email = req.body.email;
-
     console.log(email);
-    console.log(token + ' token')
-    if (!token) {
-        authenticator.authenticate(email)
-            .then(function([data, auth]) {
-                res.send(data);
-            })
-            .catch(function(err) {
-                console.log(err)
-                res.send(err)
-            })
-    } else {
-        authenticator.refreshToken(token, function(data, oauth2Client) {
-            res.json(data);
+    authenticator.authenticate(email)
+        .then(function([data, auth]) {
+            res.send(data);
         })
-    }
+        .catch(function(err) {
+            console.log(err)
+            res.send(err)
+        })
 });
 
 app.post('/app/logout', function(request, response) {
@@ -145,7 +144,7 @@ app.get('/app/refresh/:email', function(request, response) {
         if (err)
             response.send(err);
         else {
-            response.send(data)
+            response.send(data[0])
         }
     })
 })
