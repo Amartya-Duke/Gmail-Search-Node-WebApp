@@ -15,11 +15,15 @@
     <div>
         <form>
             <h2>You must Login first</h2>
-            <button type="submit" id="login" class="btn">Login</button>
-            <input type="text" name="code" id="code" placeholder="Copy and paste the code here">
+            <a id="login" class="btn" onclick="window.open(this.href,'Authorize access to your gmail account','height=300,width=600,scrollbars=1,resizable=yes');return false;">Login</a>
+            <input type="text" name="code" id="code" placeholder="Copy and paste the code here after clicking login">
             <button type="submit" class="btn" id="codeSubmit">Submit</button>
         </form>
         <p id="error"></p>
+        <div class="loading">
+            <img src="img/loading.gif" id="loading-gif" alt="loading gif" width="200px" height="200px">
+            <p>Please wait while login page link is fetched</p>
+        </div>
     </div>
 </body>
 

@@ -8,6 +8,12 @@ input {
     margin: 15px auto
 }
 
+@media screen and (max-width:720px) {
+    input {
+        width: 90%;
+    }
+}
+
 #error {
     color: red;
 }

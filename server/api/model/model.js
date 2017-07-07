@@ -2,7 +2,9 @@ var model = (function() {
     var mongoose = require('mongoose');
     var Schema = mongoose.Schema;
 
+
     var threadSchema = new Schema({
+        email: String,
         id: String,
         snippet: String,
         historyId: String,
@@ -16,20 +18,26 @@ var model = (function() {
     });
 
     var refreshSchema = new Schema({
+        email: String,
+        threadDownloadedCount: String,
+        messageDownloadedCount: String,
+        totalThreadCount: String,
+        totalMessageCount: String,
         lastRefresh: String
     });
+
     var selectTable = function(args) {
         if (args == 'threads')
             return mongoose.model('threads', threadSchema);
         if (args == 'refresh')
             return mongoose.model('refresh', refreshSchema);
     }
-    var storeThreads = function(arrayOfThreads) {
+    var storeThreads = function(email, arrayOfThreads, messageDownloadedCount, threadDownloadedCount, totalMessageCount, totalThreadCount) {
 
         var threads = selectTable('threads');
         var refresh = selectTable('refresh');
         return new Promise(function(resolve, reject) {
-            threads.remove({}, function(err, data) {
+            threads.remove({ email: email }, function(err, data) {
                 if (err) {
                     reject('error clearing database', null);
                 }
@@ -41,38 +49,39 @@ var model = (function() {
                         }
                         return;
                     }
+                    console.log("email:" + email);
                     var refreshData = new Date().toDateString() + ' ' + new Date().toLocaleTimeString();
-                    refresh.create({ lastRefresh: refreshData }, function(err, data) {
+
+                    refresh.findOneAndUpdate({ email: email }, { lastRefresh: refreshData, messageDownloadedCount: messageDownloadedCount, threadDownloadedCount: threadDownloadedCount, totalMessageCount: totalMessageCount, totalThreadCount: totalThreadCount }, { upsert: true }, function(err, data) {
                         if (err) {
-                            console.log('error here d')
+                            console.log(err)
                             reject(err)
                         } else
                             resolve(refreshData)
                     })
                 });
-
             })
         })
-
-
     }
 
-    var fetchData = function(query, callback) {
+    var fetchData = function(email, query, callback) {
         if (query)
-            selectTable('threads').find({ snippet: new RegExp(query, "i") }, callback);
+            selectTable('threads').find({ $and: [{ snippet: new RegExp(query, "i") }, { email: email }] }, callback);
         else {
-            selectTable('threads').find(callback);
+            selectTable('threads').find({ email: email }, callback);
         }
     }
 
-    var deleteData = function(callback) {
-        selectTable('threads').remove({}, callback);
-        selectTable('refresh').remove({}, function() {});
+    var deleteData = function(email, callback) {
+        selectTable('threads').remove({ email: email }, callback);
+        selectTable('refresh').remove({ email: email }, function() {});
     }
 
-    function getLastRefresh(callback) {
-        selectTable('refresh').find(callback);
+    function getLastRefresh(email, callback) {
+        selectTable('refresh').find({ email: email }, callback);
     }
+
+
     return {
         storeThreads,
         fetchData,

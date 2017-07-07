@@ -66,7 +66,12 @@ var requester = (function() {
                         json.success = true;
                         json.data = totalData;
                         json.messageCount = totalCount;
-                        return callback(json)
+                        requester.getProfileInfo(auth, function(data) {
+                            json.totalMessageCount = data.messagesTotal;
+                            json.totalThreadCount = data.threadsTotal;
+                            callback(json)
+                        })
+                        return;
                     }
                     var temp = ((token.length - till) > THRESHOLD_LIMIT) ? (THRESHOLD_LIMIT) : (token.length - till);
 
@@ -80,8 +85,6 @@ var requester = (function() {
                     callback(json)
                 })
         }
-
-
     }
 
 
@@ -95,6 +98,26 @@ var requester = (function() {
                 result = result.concat(parsedBody.threads);
                 storeMessage(userId, result, auth, callback);
                 console.log('stored in file')
+            })
+            .catch(function(err) {
+                console.log(err.message)
+            });
+    }
+
+    function getProfileInfo(auth, callback) {
+        var options = {
+            method: 'GET',
+            uri: 'https://www.googleapis.com/gmail/v1/users/me/profile',
+            headers: {
+                authorization: 'Bearer ' + auth.credentials.access_token,
+                'content-type': 'application/json'
+            },
+            json: true // Automatically stringifies the body to JSON 
+        };
+        rp(options)
+            .then(function(parsedBody) {
+                console.log('here')
+                callback(parsedBody);
             })
             .catch(function(err) {
                 console.log(err.message)
@@ -185,6 +208,7 @@ var requester = (function() {
                         message.mimeType = response.messages[i].payload.mimeType;
                         messageArray.push(message);
                     }
+                    thread.email = userId;
                     thread.count = messageArray.length;
                     thread.messages = messageArray;
 
@@ -198,7 +222,8 @@ var requester = (function() {
     return {
         retrieveMailThreads,
         retrieveMailThreadsUsingGoogleAPIs,
-        getMessagesFromThreadId
+        getMessagesFromThreadId,
+        getProfileInfo
     }
 })()
 module.exports = requester;

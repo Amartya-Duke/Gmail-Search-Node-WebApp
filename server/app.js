@@ -32,14 +32,18 @@ app.use(allowCrossDomain);
 
 app.post('/app/login', function(req, res) {
     var token = req.body.token;
+
+    var email = req.body.email;
+
+    console.log(email);
     console.log(token + ' token')
     if (!token) {
-        authenticator.authenticate()
+        authenticator.authenticate(email)
             .then(function([data, auth]) {
                 res.send(data);
             })
             .catch(function(err) {
-                console.log('here')
+                console.log(err)
                 res.send(err)
             })
     } else {
@@ -51,13 +55,14 @@ app.post('/app/login', function(req, res) {
 
 app.post('/app/logout', function(request, response) {
     var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
-        process.env.USERPROFILE) + '/.credentials/';
-
-    var TOKEN_PATH = TOKEN_DIR + 'gmail-nodejs-quickstart.json';
+        process.env.USERPROFILE) + '/.gmail_store_credentials/';
+    console.log(request.body)
+    var email = request.body.email;
+    var TOKEN_PATH = TOKEN_DIR + authenticator.getTokenPath(email);
 
     var res = {};
-    console.log('j')
-    model.deleteData(function(err, data) {
+    console.log(TOKEN_PATH)
+    model.deleteData(email, function(err, data) {
         console.log('k')
 
         if (err) {
@@ -81,21 +86,24 @@ app.post('/app/logout', function(request, response) {
 
 app.post('/app/threads/:days', function(request, response) {
     var noOfDays = request.params.days;
+    var email = request.body.email;
+    console.log(email)
     console.log('no of days requested:' + noOfDays)
     var res = {};
-    authenticator.authenticate()
+    authenticator.authenticate(email)
         .then(function([jsonResponse, oauth2Client]) {
             console.log('stage 1 ');
-            return requester.retrieveMailThreadsUsingGoogleAPIs('me', noOfDays, oauth2Client)
+            return requester.retrieveMailThreadsUsingGoogleAPIs(email, noOfDays, oauth2Client)
         })
         .then(function(data) {
             console.log('stage 2');
             console.log('Total Message count : ' + data.messageCount);
-            res.messageCount = data.messageCount;
-            res.threadCount = data.data.length;
+            res.messageDownloadedCount = data.messageCount;
+            res.threadDownloadedCount = data.data.length;
+            res.totalMessageCount = data.totalMessageCount;
+            res.totalThreadCount = data.totalThreadCount;
             console.log('Total Thread count:' + data.data.length);
-
-            return model.storeThreads(data.data);
+            return model.storeThreads(email, data.data, data.messageCount, data.data.length, data.totalMessageCount, data.totalThreadCount);
         })
         .then(function(data) {
             console.log('stage 3')
@@ -110,29 +118,34 @@ app.post('/app/threads/:days', function(request, response) {
 
 });
 
-app.get('/app/data/:query', function(request, response) {
+app.get('/app/data/:query/:email', function(request, response) {
     var query = request.params.query;
-    console.log('query:' + query)
+    var email = request.params.email;
+    console.log('query:' + query + " email: " + email)
     if (query == "{{all}}")
         query = null;
-
-    model.fetchData(query, function(err, data) {
-        if (err) {
+    authenticator.authenticate(email)
+        .then(function([jsonResponse, oauth2Client]) {
+            model.fetchData(email, query, function(err, data) {
+                if (err) {
+                    response.json(err)
+                } else
+                    response.json(data)
+            })
+        })
+        .catch(function(err) {
             response.json(err)
-        } else
-            response.json(data)
-    })
+        })
 })
 
-app.get('/app/refresh', function(request, response) {
-    model.getLastRefresh(function(err, data) {
+app.get('/app/refresh/:email', function(request, response) {
+    var email = request.params.email;
+    console.log(email)
+    model.getLastRefresh(email, function(err, data) {
         if (err)
             response.send(err);
         else {
-            if (data.length == 0)
-                response.send('never');
-            else
-                response.send(data[data.length - 1].lastRefresh)
+            response.send(data)
         }
     })
 })

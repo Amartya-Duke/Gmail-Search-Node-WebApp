@@ -5,6 +5,14 @@
     text-align: center;
 }
 
+.user {
+    text-align: center
+}
+
+.userid {
+    font-weight: bold
+}
+
 .green {
     color: green
 }
@@ -15,8 +23,8 @@
 }
 
 .loading img {
-    width: 400px;
-    height: 400px;
+    width: 250px;
+    height: 250px;
 }
 
 .loading p {

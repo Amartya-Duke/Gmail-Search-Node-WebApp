@@ -1,20 +1,16 @@
 $(function() {
-    login();
     bindListner();
+    login();
     var redirectUrl;
 
     function bindListner() {
-        $('#login').on('click', function(event) {
-            event.preventDefault();
-            $('#code').show(1000);
-            $('#codeSubmit').show(1000);
-            login(function(data) {
-                window.open(data.redirectUrl, "Authorize access to your gmail account", "width=500,height=500");
-            })
-        });
+        $('#loading').show();
+        $('#login').hide();
+        $('#code').show(1000);
+        $('#codeSubmit').show(1000);
+        $('.loading').hide();
         $('#codeSubmit').on('click', processAuthentication);
-        $('#code').hide();
-        $('#codeSubmit').hide();
+
     }
 
     function processAuthentication(event) {
@@ -23,27 +19,44 @@ $(function() {
         if (token == "") {
             alert('You should copy and paste the code before submitting');
         } else {
-            var jsonToken = {};
-            jsonToken.token = token;
-            login(jsonToken, function(data) {
+            login(token, function(data) {
                 if (!data.success) {
+                    console.log('k')
                     $('#error').html(data.error)
                 }
             })
         }
     }
 
-
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
 
     function login(parameter1, parameter2) {
+        var email = getCookie("email");
         var loginData, callback;
-        var jsonData;
+        var jsonData = {};
+
+        console.log(document.cookie)
         if (typeof parameter1 === "function") {
             callback = parameter1;
         } else if (parameter1 && (typeof parameter2 === "function")) {
-            jsonData = parameter1;
+            jsonData.token = parameter1;
             callback = parameter2;
         }
+        jsonData.email = email;
         $.ajax({
             type: 'POST',
             url: 'http://127.0.0.1:8080/app/login',
@@ -52,11 +65,18 @@ $(function() {
             contentType: "application/json; charset=utf-8",
             success: function(data) {
                 console.log(data);
-                if (data.success)
+                if (data.success) {
+                    document.cookie = "email=" + data.email;
                     window.location = 'home.html'
-                else {
+                } else {
                     if (callback)
                         callback(data)
+                    console.log(data.redirectUrl)
+                    $('#login').attr('href', data.redirectUrl);
+                    $('#loading').hide();
+                    $('#login').show();
+                    $('#code').show(1000);
+                    $('#codeSubmit').show(1000);
                 }
             },
             error: function(err) {
@@ -64,8 +84,4 @@ $(function() {
             }
         });
     }
-
-
-
-
 })
